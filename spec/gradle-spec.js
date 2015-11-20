@@ -25,14 +25,12 @@ describe('Build', function() {
             atom.packages.activatePackage('build'),
             atom.packages.activatePackage('build-gradle')
           ]);
-        })
-        .then(() => console.log(directory));
+        });
     });
   });
 
   afterEach(() => {
-    console.log(directory);
-    // fs.removeSync(directory);
+    fs.removeSync(directory);
   });
 
   describe('build.gradle file exists', () => {
