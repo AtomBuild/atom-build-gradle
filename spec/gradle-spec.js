@@ -1,31 +1,19 @@
 'use babel';
-'use strict';
 
-let fs = require('fs-extra');
-let temp = require('temp');
-let specHelpers = require('atom-build-spec-helpers');
+import fs from 'fs-extra';
+import temp from 'temp';
+import { vouch } from 'atom-build-spec-helpers';
+import { provideBuilder } from '../lib/gradle';
 
-describe('Build', function() {
+describe('gradle', () => {
   let directory;
-  let workspaceElement;
+  const builder = provideBuilder();
 
   beforeEach(() => {
-    workspaceElement = atom.views.getView(atom.workspace);
-    jasmine.attachToDOM(workspaceElement);
-    jasmine.unspy(window, 'setTimeout');
-    jasmine.unspy(window, 'clearTimeout');
-
     waitsForPromise(() => {
-      return specHelpers.vouch(temp.mkdir, 'atom-build-gradle-spec-')
-        .then((dir) => specHelpers.vouch(fs.realpath, dir))
-        .then((dir) => atom.project.setPaths([ (directory = dir + '/') ]))
-        .then(() => {
-          return Promise.all([
-            specHelpers.vouch(fs.copy, __dirname + '/fixture/wrapper', directory),
-            atom.packages.activatePackage('build'),
-            atom.packages.activatePackage('build-gradle')
-          ]);
-        });
+      return vouch(temp.mkdir, 'atom-build-gradle-spec-')
+        .then((dir) => vouch(fs.realpath, dir))
+        .then((dir) => vouch(fs.copy, __dirname + '/fixture/wrapper', directory = `${dir}/`));
     });
   });
 
@@ -34,50 +22,36 @@ describe('Build', function() {
   });
 
   describe('build.gradle file exists', () => {
-    it('should make those targets available', () => {
-      waitsForPromise(function () {
-        let file = __dirname + '/fixture/build.gradle';
-        return specHelpers.vouch(fs.copy, file, directory + '/build.gradle')
-          .then(() => specHelpers.refreshAwaitTargets());
+    it('should be eligible', () => {
+      waitsForPromise(() => {
+        const file = __dirname + '/fixture/build.gradle';
+        return vouch(fs.copy, file, directory + '/build.gradle');
       });
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:select-active-target'));
-
-      waitsFor(() => workspaceElement.querySelector('.select-list li.build-target'));
-
       runs(() => {
-        let targets = [...workspaceElement.querySelectorAll('.select-list li.build-target')].map(el => el.textContent);
-        let atLeast = [ 'Gradle: init', 'Gradle: wrapper', 'Gradle: dependencies', 'Gradle: help', 'Gradle: wheelOfTime' ];
-        let missing = atLeast.filter((e) => targets.indexOf(e) === -1);
-        expect(missing.length).toEqual(0);
+        expect(builder.isEligable(directory)).toEqual(true);
       });
     });
 
-    it('should be possible to run a custom task defined in a gradle file', () => {
-      waitsForPromise(function () {
-        let file = __dirname + '/fixture/build.gradle';
-        return specHelpers.vouch(fs.copy, file, directory + '/build.gradle')
-          .then(() => specHelpers.refreshAwaitTargets());
+    it('should resolve tasks in settings', () => {
+      waitsForPromise(() => {
+        const file = __dirname + '/fixture/build.gradle';
+        return vouch(fs.copy, file, directory + '/build.gradle');
       });
 
-      runs(() => atom.commands.dispatch(workspaceElement, 'build:select-active-target'));
-
-      waitsFor(() => workspaceElement.querySelector('.select-list li.build-target'));
-
-      runs(() => {
-        let targets = [...workspaceElement.querySelectorAll('.select-list li.build-target')];
-        targets.find((t) => t.innerHTML === 'Gradle: wheelOfTime').click();
-        atom.commands.dispatch(workspaceElement, 'build:trigger');
+      waitsForPromise(() => {
+        return builder.settings(directory).then((settings) => {
+          const targets = settings.map(s => s.name);
+          const atLeast = [ 'Gradle: init', 'Gradle: wrapper', 'Gradle: dependencies', 'Gradle: help', 'Gradle: wheelOfTime' ];
+          const missing = atLeast.filter((e) => targets.indexOf(e) === -1);
+          expect(missing.length).toEqual(0);
+        });
       });
+    });
 
-      waitsFor(function() {
-        return workspaceElement.querySelector('.build .title') &&
-          workspaceElement.querySelector('.build .title').classList.contains('success');
-      });
-
-      runs(function() {
-        expect(workspaceElement.querySelector('.build')).toExist();
-        expect(workspaceElement.querySelector('.build .output').textContent).toMatch(/The Wheel of Time turns, and Ages come and pass, leaving memories that become legend\./);
+    describe('build.gradle file does not exist', () => {
+      it('should not be eligible', () => {
+        expect(builder.isEligable(directory)).toEqual(false);
       });
     });
   });
