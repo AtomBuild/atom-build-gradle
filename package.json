@@ -2,7 +2,7 @@
   "name": "build-gradle",
   "version": "0.3.0",
   "description": "Runs Gradle builds",
-  "repository": "https://github.com/noseglid/atom-build-gradle",
+  "repository": "https://github.com/AtomBuild/atom-build-gradle",
   "license": "MIT",
   "engines": {
     "atom": "^1.0.0"
