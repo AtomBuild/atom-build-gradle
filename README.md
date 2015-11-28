@@ -10,5 +10,5 @@ This package requires [atom-build](https://github.com/noseglid/atom-build) to be
 ## Capabilities
 
   * Support for gradle wrapper.
-  * Support target extraction. Will run `gradle tasks` or `./gradlew` to retrieve tasks.
+  * Support target extraction. Will run `gradle tasks` or `./gradlew tasks` to retrieve tasks.
   * Will refresh tasks automatically if you alter the gradle file.
