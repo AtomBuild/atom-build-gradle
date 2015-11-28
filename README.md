@@ -6,3 +6,9 @@ Uses the [atom-build](https://github.com/noseglid/atom-build) package to execute
 gradle builds in the `Atom` editor.
 
 This package requires [atom-build](https://github.com/noseglid/atom-build) to be installed.
+
+## Capabilities
+
+  * Support for gradle wrapper.
+  * Support target extraction. Will run `gradle tasks` or `./gradlew` to retrieve tasks.
+  * Will refresh tasks automatically if you alter the gradle file.
