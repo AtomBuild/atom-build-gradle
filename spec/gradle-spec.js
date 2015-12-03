@@ -13,11 +13,8 @@ describe('gradle', () => {
   beforeEach(() => {
     waitsForPromise(() => {
       return vouch(temp.mkdir, 'atom-build-gradle-spec-')
-        .then((dir) => {
-          directory = `${dir}/`;
-          return vouch(fs.realpath, directory);
-        })
-        .then(() => builder = new Builder(directory));
+        .then((dir) => directory = `${dir}/`)
+        .then((dir) => builder = new Builder(dir));
     });
   });
 
