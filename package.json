@@ -1,6 +1,6 @@
 {
   "name": "build-gradle",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Runs Gradle builds",
   "repository": "https://github.com/AtomBuild/atom-build-gradle",
   "license": "MIT",
